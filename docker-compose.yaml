@@ -1,0 +1,19 @@
+volumes:
+  db-data:
+
+services:
+  pg-db:
+    image: postgres:17
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "postgres"]
+      start_interval: 1s
+      interval: 2s
+      timeout: 2s
+      retries: 5
+    environment:
+      POSTGRES_PASSWORD: assw0rd
+    volumes:
+      - db-data:/var/lib/postgresql/data:rw
+    ports:
+      - "5434:5432"
