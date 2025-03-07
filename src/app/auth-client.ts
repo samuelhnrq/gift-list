@@ -4,8 +4,6 @@ import {
   inferAdditionalFields,
   passkeyClient,
   oidcClient,
-  // genericOAuthClient,
-  // apiKeyClient,
 } from "better-auth/client/plugins";
 
 let baseURL = process.env.BETTER_AUTH_URL;
@@ -19,9 +17,7 @@ export const authClient = createAuthClient({
     passkeyClient(),
     oidcClient(),
     inferAdditionalFields<typeof auth>(),
-    // genericOAuthClient(),
-    // apiKeyClient(),
   ],
 });
 
-export const { signIn, signOut, getSession, useSession } = authClient;
+export const { signIn, useSession } = authClient;

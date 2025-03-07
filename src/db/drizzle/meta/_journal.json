@@ -8,6 +8,13 @@
       "when": 1741303942648,
       "tag": "0000_burly_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1741372153727,
+      "tag": "0001_true_logan",
+      "breakpoints": true
     }
   ]
 }
