@@ -8,8 +8,13 @@ import {
   // apiKeyClient,
 } from "better-auth/client/plugins";
 
+let baseURL = process.env.BETTER_AUTH_URL;
+if (process.env.VERCEL_URL) {
+  baseURL = `https://${process.env.VERCEL_URL}`;
+}
+
 export const authClient = createAuthClient({
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL: baseURL,
   plugins: [
     passkeyClient(),
     oidcClient(),
