@@ -1,5 +1,5 @@
-import { SQL } from "bun";
-import { drizzle } from "drizzle-orm/bun-sql";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import {
   account,
   apikey,
@@ -14,7 +14,7 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is not set");
 }
 
-const client = new SQL(process.env.DATABASE_URL);
+const client = postgres(process.env.DATABASE_URL);
 
 // You can specify any property from the bun sql connection options
 export const db = drizzle({
