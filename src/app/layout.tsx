@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import NavBar from "@/components/NavBar";
+import theme from "@/lib/theme";
+import { ThemeProvider } from "@mui/material/styles";
+
 import "./globals.css";
-import SignInButton from "@/components/SignInButton";
-import { getSession } from "@/auth";
-import GiftIcon from "@/icons/Gift";
-import Link from "next/link";
+import { Box, CssBaseline } from "@mui/material";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,28 +28,32 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getSession();
-  console.log(session?.user.name);
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex overflow-hidden flex-col`}
-      >
-        <nav className="px-4 py-3 bg-gray-900">
-          <div className="container flex justify-between items-center m-auto max-w-6xl">
-            <div className="text-2xl font-light">
-              <Link href="/">
-                <GiftIcon /> Gift List
-              </Link>
-            </div>
-            <div>
-              <SignInButton user={session?.user} />
-            </div>
-          </div>
-        </nav>
-        <div className="justify-center items-center flex flex-1">
-          {children}
-        </div>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <AppRouterCacheProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline enableColorScheme />
+            <Box
+              sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
+            >
+              <NavBar />
+              <Box
+                sx={{
+                  flexGrow: 1,
+                  maxWidth: "xl",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  display: "flex",
+                  width: "100%",
+                  marginX: "auto",
+                }}
+              >
+                {children}
+              </Box>
+            </Box>
+          </ThemeProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

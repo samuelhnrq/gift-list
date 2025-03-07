@@ -2,6 +2,7 @@
 
 import { authClient } from "@/app/auth-client";
 import Spinner from "@/icons/Spinner";
+import { Button, Typography } from "@mui/material";
 import type { User } from "better-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -34,7 +35,7 @@ function SignInButton({ user: initialUser }: SignInButtonProps) {
     window.location.href = url;
   }
 
-  async function singOut() {
+  async function signOut() {
     setLoading(true);
     await authClient.signOut();
     router.push("/");
@@ -46,16 +47,18 @@ function SignInButton({ user: initialUser }: SignInButtonProps) {
   }
 
   return user ? (
-    <>
-      <span className="text-sm font-medium">Welcome {user?.name}</span>
-      <button className="button ml-2" type="button" onClick={singOut}>
+    <div>
+      <Typography variant="body2" display="inline" sx={{ mr: 1 }}>
+        Welcome {user?.name}
+      </Typography>
+      <Button type="button" onClick={signOut} variant="outlined">
         Sign out
-      </button>
-    </>
+      </Button>
+    </div>
   ) : (
-    <button className="button" type="button" onClick={singIn}>
+    <Button variant="outlined" type="button" onClick={singIn}>
       Sign In
-    </button>
+    </Button>
   );
 }
 
