@@ -1,15 +1,15 @@
-name: GitHub Actions Demo
+name: Lint & Format
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 
 jobs:
-  Explore-GitHub-Actions:
+  lint-format:
+    name: Lint & Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - run: bun install --frozen-lockfile
-        name: Install
-      - run: bun run lint
+      - uses: jdx/mise-action@v2
+      - run: pnpm install --frozen-lockfile
+        name: Install dependencies
+      - run: pnpm run lint
+        name: Lint
