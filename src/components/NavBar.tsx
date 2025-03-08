@@ -1,39 +1,36 @@
 import { CardGiftcard } from "@mui/icons-material";
 import Link from "next/link";
-import SignInButton from "./SignInButton";
+import AuthState from "./AuthState";
 import { getSession } from "@/auth";
-import { Box, Typography } from "@mui/material";
+import { Typography, AppBar, Toolbar } from "@mui/material";
 
 async function NavBar() {
   const session = await getSession();
   return (
-    <Box
-      component="nav"
-      sx={{ paddingY: 2, backgroundColor: "secondary.main" }}
-    >
-      <Box
+    <AppBar position="sticky">
+      <Toolbar
+        component="nav"
         sx={{
           display: "flex",
           alignItems: "center",
           maxWidth: "xl",
+          width: "100%",
+          paddingX: { sm: 2, md: null },
           marginX: "auto",
           justifyContent: "space-between",
         }}
       >
         <Link href="/">
-          <CardGiftcard sx={{ verticalAlign: "sub", color: "primary.main" }} />
-          <Typography
-            variant="h5"
-            display="inline"
-            color="textPrimary"
-            sx={{ ml: 2 }}
-          >
+          <Typography variant="h5" display="inline" noWrap color="textPrimary">
+            <CardGiftcard
+              sx={{ verticalAlign: "baseline", color: "secondary.main", mr: 2 }}
+            />
             Gift List
           </Typography>
         </Link>
-        <SignInButton user={session?.user} />
-      </Box>
-    </Box>
+        <AuthState user={session?.user} />
+      </Toolbar>
+    </AppBar>
   );
 }
 

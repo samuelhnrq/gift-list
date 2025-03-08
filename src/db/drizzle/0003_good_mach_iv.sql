@@ -1,0 +1,2 @@
+ALTER TABLE "game" ADD COLUMN "creator" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "game" ADD CONSTRAINT "game_creator_participant_id_fk" FOREIGN KEY ("creator") REFERENCES "public"."participant"("id") ON DELETE cascade ON UPDATE no action;

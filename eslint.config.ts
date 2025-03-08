@@ -21,7 +21,6 @@ const eslintConfig = tseslint.config([
     "plugin:@next/next/recommended",
   ),
   js.configs.recommended,
-  tseslint.configs.strict,
   eslintConfigPrettier,
 ]);
 

@@ -1,7 +1,9 @@
-import { getSession } from "@/auth";
+import { assertSession } from "@/auth";
 import { db } from "@/db";
-import { participant } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { game, participant, participantToGame, user } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
+import { cache } from "react";
 
 export async function copyUserAsParticipant({
   id,
@@ -18,21 +20,31 @@ export async function copyUserAsParticipant({
     });
 }
 
-export async function getCurrentParticipant() {
-  const session = await getSession();
-  if (!session?.user?.id) {
-    return null;
-  }
+export const getCurrentParticipant = cache(async () => {
+  const session = await assertSession();
   const participantUser = await db.query.participant.findFirst({
     where: eq(participant.userId, session.user.id),
-    with: {
-      participantGames: {
-        with: {
-          game: true,
-        },
-      },
-    },
   });
+  if (!participantUser) {
+    throw redirect("/");
+  }
+  return participantUser;
+});
 
-  return participantUser || null;
-}
+export const getParticipantsOfGame = cache(async (gameId: string) => {
+  const { id: pId } = await getCurrentParticipant();
+  const found = await db
+    .select({ participant, user })
+    .from(participant)
+    .innerJoin(user, eq(user.id, participant.userId))
+    .innerJoin(
+      participantToGame,
+      eq(participantToGame.participantId, participant.id),
+    )
+    .innerJoin(game, eq(game.id, participantToGame.gameId))
+    .where(
+      and(eq(participant.id, pId), eq(game.creator, pId), eq(game.id, gameId)),
+    )
+    .execute();
+  return found;
+});

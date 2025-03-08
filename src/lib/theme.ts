@@ -1,8 +1,9 @@
 "use client";
-import { amber, purple } from "@mui/material/colors";
-import { createTheme } from "@mui/material/styles";
 
-const theme = createTheme({
+import { createTheme } from "@mui/material";
+import { red, teal } from "@mui/material/colors";
+
+export const theme = createTheme({
   cssVariables: true,
   typography: {
     fontFamily: "var(--font-geist-sans)",
@@ -10,12 +11,15 @@ const theme = createTheme({
   colorSchemes: {
     dark: {
       palette: {
-        primary: { main: amber[400] },
-        secondary: { main: purple[300] },
+        primary: { main: red[400] },
+        secondary: { main: teal[300] },
+      },
+    },
+    light: {
+      palette: {
+        secondary: { main: red[400] },
+        primary: { main: teal[200] },
       },
     },
   },
-  defaultColorScheme: "dark",
 });
-
-export default theme;

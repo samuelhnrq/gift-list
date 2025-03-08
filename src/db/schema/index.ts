@@ -31,12 +31,19 @@ export const participantRelations = relations(participant, ({ one, many }) => ({
 export const game = pgTable("game", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  creator: uuid("creator")
+    .notNull()
+    .references(() => participant.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const gameRelations = relations(game, ({ many }) => ({
-  participants: many(participant),
+export const gameRelations = relations(game, ({ many, one }) => ({
+  gameParticipants: many(participantToGame),
+  creator: one(participant, {
+    fields: [game.creator],
+    references: [participant.id],
+  }),
 }));
 
 export const participantToGame = pgTable(

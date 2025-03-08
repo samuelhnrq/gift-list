@@ -1,17 +1,17 @@
 import { getSession } from "@/auth";
-import { getCurrentParticipant } from "@/lib/participants";
-import { Box, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const session = await getSession();
 
-  const p = await getCurrentParticipant();
+  if (session?.user?.id) {
+    redirect("/games");
+  }
   return (
-    <Box sx={{ flex: "1" }}>
-      <Typography>
-        Hello world {session?.user?.name}
-        Me: {p?.id} {p?.participantGames.length}
-      </Typography>
-    </Box>
+    <>
+      <Typography variant="h1">Welcome to Gift List</Typography>
+      <Typography variant="h3">Please sign in to continue</Typography>
+    </>
   );
 }

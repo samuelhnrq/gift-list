@@ -1,8 +1,7 @@
 "use client";
 
 import { authClient } from "@/app/auth-client";
-import Spinner from "@/icons/Spinner";
-import { Button, Typography } from "@mui/material";
+import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import type { User } from "better-auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,7 +11,7 @@ export interface SignInButtonProps {
   user?: User;
 }
 
-function SignInButton({ user: initialUser }: SignInButtonProps) {
+function AuthState({ user: initialUser }: SignInButtonProps) {
   const [user, setUser] = useState<User | undefined>(initialUser);
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(false);
@@ -43,23 +42,29 @@ function SignInButton({ user: initialUser }: SignInButtonProps) {
   }
 
   if (loading) {
-    return <Spinner />;
+    return <CircularProgress size={36} />;
   }
 
   return user ? (
-    <div>
-      <Typography variant="body2" display="inline" sx={{ mr: 1 }}>
+    <Stack direction="row" alignItems="center" gap={1}>
+      <Typography
+        variant="body2"
+        display="inline"
+        noWrap
+        align="left"
+        sx={{ flexShrink: 1, maxWidth: "30vw" }}
+      >
         Welcome {user?.name}
       </Typography>
-      <Button type="button" onClick={signOut} variant="outlined">
-        Sign out
+      <Button type="button" onClick={signOut} variant="text" color="secondary">
+        <Typography noWrap>Sign out</Typography>
       </Button>
-    </div>
+    </Stack>
   ) : (
-    <Button variant="outlined" type="button" onClick={singIn}>
+    <Button variant="contained" type="button" onClick={singIn}>
       Sign In
     </Button>
   );
 }
 
-export default SignInButton;
+export default AuthState;
