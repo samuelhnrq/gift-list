@@ -1,8 +1,12 @@
+import AddParticipant from "@/components/AddParticipant";
+import ParticipantList, {
+  ParticipantSkeleton,
+} from "@/components/ParticipantList";
 import { getGame } from "@/lib/games";
-import { getParticipantsOfGame } from "@/lib/participants";
-import { Button, Stack } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
+import { Button, Stack, Typography } from "@mui/material";
 import Link from "next/link";
-import React from "react";
+import React, { Suspense } from "react";
 
 type GameDetailProps = {
   params: Promise<{ gameId: string }>;
@@ -11,7 +15,6 @@ type GameDetailProps = {
 async function GameDetail({ params }: GameDetailProps) {
   const { gameId } = await params;
   const game = await getGame(gameId);
-  const parties = await getParticipantsOfGame(gameId);
   if (!game) {
     return (
       <Stack>
@@ -23,10 +26,23 @@ async function GameDetail({ params }: GameDetailProps) {
     );
   }
   return (
-    <div>
-      {game.name} {parties.length}
-      {parties.map((x) => x.user.name).join(", ")}
-    </div>
+    <Stack gap={{ xs: 1, md: 2 }} padding={2} maxHeight="100%">
+      <Button
+        variant="text"
+        sx={{ mr: "auto" }}
+        href="/games"
+        LinkComponent={Link}
+        startIcon={<ArrowBack />}
+      >
+        Games
+      </Button>
+      <Typography variant="h4">{game.name}</Typography>
+      <AddParticipant game={game} />
+      <Typography variant="h6">Participants</Typography>
+      <Suspense fallback={<ParticipantSkeleton />}>
+        <ParticipantList game={game} sx={{ overflow: "auto" }} />
+      </Suspense>
+    </Stack>
   );
 }
 

@@ -14,7 +14,7 @@ async function GamesList() {
       </Typography>
       <Grid container spacing={2}>
         {games.map((game) => (
-          <Grid size={3} key={game.id}>
+          <Grid size={{ xs: 12, md: 3 }} key={game.id}>
             <GameCard game={game} />
           </Grid>
         ))}

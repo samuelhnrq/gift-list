@@ -32,9 +32,11 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   databaseHooks: {
-    user: {
+    session: {
       create: {
-        after: copyUserAsParticipant,
+        after: async (session) => {
+          await copyUserAsParticipant(session.userId);
+        },
       },
     },
   },

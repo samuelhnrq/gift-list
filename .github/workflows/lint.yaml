@@ -1,5 +1,5 @@
 name: Lint & Format
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+run-name: Lint & Format
 on: [push]
 
 jobs:

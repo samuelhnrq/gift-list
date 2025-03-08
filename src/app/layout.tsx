@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NavBar from "@/components/NavBar";
-import { Box } from "@mui/material";
+import { Container, Stack } from "@mui/material";
 import Providers from "@/components/Providers";
 import type { ReactNode } from "react";
 
@@ -29,26 +29,12 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Providers>
-          <Box
-            sx={{ display: "flex", flexDirection: "column", height: "100vh" }}
-          >
+          <Stack sx={{ height: "100vh", maxHeight: "100vh" }}>
             <NavBar />
-            <Box
-              sx={{
-                flexGrow: 1,
-                maxWidth: "xl",
-                alignItems: "center",
-                justifyContent: "center",
-                display: "flex",
-                width: "100%",
-                marginX: "auto",
-                position: "relative",
-                flexDirection: "column",
-              }}
-            >
+            <Container sx={{ position: "relative", flex: 1 }}>
               {children}
-            </Box>
-          </Box>
+            </Container>
+          </Stack>
         </Providers>
       </body>
     </html>

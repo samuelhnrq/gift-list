@@ -17,9 +17,8 @@ export const getGames = cache(async (): Promise<GameType[]> => {
   const games = await db
     .select({ game })
     .from(game)
-    .innerJoin(participantToGame, eq(participantToGame.gameId, game.id))
-    .innerJoin(participant, eq(participant.id, participantToGame.participantId))
-    .where(eq(participant.userId, session.user.id))
+    .innerJoin(participant, eq(participant.id, game.creator))
+    .where(eq(participant.userEmail, session.user.email))
     .execute();
   return games.map((game) => game.game);
 });
@@ -32,7 +31,23 @@ export const getGame = cache(async (gameId: string) => {
   return found;
 });
 
-export const createGame = async (form: FormData): Promise<void> => {
+export const deleteGameAction = async (gameId: string): Promise<void> => {
+  const profile = await getCurrentParticipant();
+  if (gameId.length !== 36) {
+    console.log("gameId is not a uuid", gameId);
+    return;
+  }
+  try {
+    await db
+      .delete(game)
+      .where(and(eq(game.id, gameId), eq(game.creator, profile.id)));
+    revalidatePath("/games", "page");
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const createGameActiton = async (form: FormData): Promise<void> => {
   console.log("form", form);
   const name = form.get("name");
   console.log(name);
@@ -42,13 +57,13 @@ export const createGame = async (form: FormData): Promise<void> => {
   const session = await assertSession();
   await db.transaction(async (tx) => {
     // Intentionally not using cached Pariticipant from ./participants (might be out of date)
-    const currentParticipant = await tx.query.participant.findFirst({
-      where: eq(participant?.userId, session.user.id),
-    });
+    const [currentParticipant] = await tx
+      .select()
+      .from(participant)
+      .where(eq(participant.userEmail, session.user.email));
+
     if (!currentParticipant) {
       tx.rollback();
-      // Actually unreachable rollback throws, but typescript doesn't know that
-      throw new Error("No participant found");
     }
     const newGame: NewGameType = {
       name,
@@ -62,8 +77,6 @@ export const createGame = async (form: FormData): Promise<void> => {
     });
     if (!result) {
       tx.rollback();
-      // Actually unreachable rollback throws, but typescript doesn't know that
-      throw new Error("Game not created");
     }
     await tx
       .insert(participantToGame)

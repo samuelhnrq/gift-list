@@ -11,19 +11,16 @@ export * from "./auth-schema";
 
 export const participant = pgTable("participant", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id")
-    .notNull()
-    .unique()
-    .references(() => user.id, { onDelete: "cascade" }),
+  userEmail: text("user_email").notNull().unique(),
   exclusions: uuid("exclusions").array().notNull().default([]),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const participantRelations = relations(participant, ({ one, many }) => ({
   profileInfo: one(user, {
-    fields: [participant.userId],
-    references: [user.id],
+    fields: [participant.userEmail],
+    references: [user.email],
   }),
   participantGames: many(participantToGame),
 }));

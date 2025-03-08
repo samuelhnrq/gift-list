@@ -1,5 +1,12 @@
-import type { GameType } from "@/lib/games";
-import { Card, CardContent, Typography } from "@mui/material";
+import { deleteGameAction, type GameType } from "@/lib/games";
+import { Delete } from "@mui/icons-material";
+import {
+  Card,
+  CardActions,
+  CardContent,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import Link from "next/link";
 
 function GameCard({ game }: { game: GameType }) {
@@ -13,6 +20,11 @@ function GameCard({ game }: { game: GameType }) {
           </Typography>
         </CardContent>
       </Link>
+      <CardActions>
+        <IconButton onClick={deleteGameAction.bind(null, game.id)}>
+          <Delete />
+        </IconButton>
+      </CardActions>
     </Card>
   );
 }

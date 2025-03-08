@@ -1,6 +1,6 @@
 "use client";
 
-import { createGame } from "@/lib/games";
+import { createGameActiton } from "@/lib/games";
 import { Add } from "@mui/icons-material";
 import {
   Button,
@@ -19,7 +19,7 @@ function NewGame() {
   return (
     <>
       <Fab
-        color="secondary"
+        color="primary"
         onClick={() => setOpen(true)}
         sx={{ position: "absolute", bottom: 32, right: 32 }}
       >
@@ -36,7 +36,7 @@ function NewGame() {
             transform: "translate(-50%, -50%)",
           }}
         >
-          <form action={createGame}>
+          <form action={createGameActiton}>
             <CardContent sx={{ width: "400px", maxWidth: "100%" }}>
               <Typography variant="h6" sx={{ marginBottom: 2 }}>
                 Create a new game
@@ -53,6 +53,7 @@ function NewGame() {
               <Button
                 variant="contained"
                 type="submit"
+                color="secondary"
                 sx={{ marginLeft: "auto" }}
                 onClick={() => setOpen(false)}
               >

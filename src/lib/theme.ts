@@ -11,14 +11,21 @@ export const theme = createTheme({
   colorSchemes: {
     dark: {
       palette: {
-        primary: { main: red[400] },
-        secondary: { main: teal[300] },
+        primary: { main: teal[300] },
+        secondary: { main: red[400] },
       },
     },
     light: {
       palette: {
-        secondary: { main: red[400] },
-        primary: { main: teal[200] },
+        secondary: { main: teal[200] },
+        primary: { main: red[400] },
+      },
+    },
+  },
+  components: {
+    MuiSkeleton: {
+      defaultProps: {
+        animation: "wave",
       },
     },
   },
