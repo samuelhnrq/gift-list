@@ -8,6 +8,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+export type ParticipantType = typeof participant.$inferSelect;
+
 export const copyUserAsParticipant = async (userId: string): Promise<void> => {
   const [newUser] = await db.select().from(user).where(eq(user.id, userId));
   if (!user) {
