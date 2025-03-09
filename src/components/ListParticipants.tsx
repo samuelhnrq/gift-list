@@ -11,8 +11,9 @@ import {
   type SxProps,
   type Theme,
 } from "@mui/material";
-import DeleteParticipant from "./DeleteParticipant";
+import ParticipantActions from "./DeleteParticipant";
 import type { GameType } from "@/lib/games";
+import { Suspense } from "react";
 
 type ParticipantType = Awaited<
   ReturnType<typeof getParticipantsOfGame>
@@ -24,10 +25,11 @@ interface ParticipantProps {
 }
 
 function Participant({ participant, game }: ParticipantProps) {
-  const pid = participant.participant.id;
   return (
     <ListItem
-      secondaryAction={<DeleteParticipant game={game} participantId={pid} />}
+      secondaryAction={
+        <ParticipantActions game={game} partipantToGame={participant} />
+      }
     >
       <ListItemAvatar>
         <Avatar
@@ -59,7 +61,8 @@ async function ParticipantList({ game, sx }: ParticipantListProps) {
         {
           width: "calc(65 * var(--mui-spacing))",
           maxWidth: "100%",
-          maxHeight: "40vh",
+          maxHeight: "50vh",
+          overflow: "auto",
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -73,7 +76,7 @@ async function ParticipantList({ game, sx }: ParticipantListProps) {
   );
 }
 
-export function ParticipantSkeleton() {
+function ParticipantSkeleton() {
   return (
     <Card sx={{ width: "calc(65 * var(--mui-spacing))", maxWidth: "100%" }}>
       <List>
@@ -93,4 +96,12 @@ export function ParticipantSkeleton() {
   );
 }
 
-export default ParticipantList;
+function ListParticipants(props: ParticipantListProps) {
+  return (
+    <Suspense fallback={<ParticipantSkeleton />}>
+      <ParticipantList {...props} />
+    </Suspense>
+  );
+}
+
+export default ListParticipants;

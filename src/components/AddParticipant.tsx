@@ -2,26 +2,27 @@
 
 import type { GameType } from "@/lib/games";
 import { addParticipantAction } from "@/lib/participants";
-import { TextField } from "@mui/material";
+import { Box, LinearProgress, TextField } from "@mui/material";
 import { useActionState } from "react";
 
 function AddParticipant({ game }: { game: GameType }) {
-  const [, action] = useActionState(addParticipantAction, game.id);
+  const [, action, isPending] = useActionState(addParticipantAction, game.id);
 
   return (
-    <div>
+    <Box sx={{ width: "calc(65 * var(--mui-spacing))", maxWidth: "100%" }}>
       Add participants:
       <form action={action}>
         <TextField
+          fullWidth
           variant="filled"
           label="E-mail"
           required
           type="email"
           name="email"
-          sx={{ width: "calc(65 * var(--mui-spacing))", maxWidth: "100%" }}
         />
+        <LinearProgress sx={{ opacity: isPending ? 1 : 0 }} />
       </form>
-    </div>
+    </Box>
   );
 }
 

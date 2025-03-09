@@ -31,7 +31,14 @@ export default async function RootLayout({
         <Providers>
           <Stack sx={{ height: "100vh", maxHeight: "100vh" }}>
             <NavBar />
-            <Container sx={{ position: "relative", flex: 1 }}>
+            <Container
+              sx={{
+                position: "relative",
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               {children}
             </Container>
           </Stack>

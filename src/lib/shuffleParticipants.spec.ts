@@ -1,5 +1,8 @@
 import type { ParticipantType } from "./participants";
-import { shuffleParticipants } from "./shuffleParticipants";
+import {
+  CircularExclusionError,
+  shuffleParticipants,
+} from "./shuffleParticipants";
 
 function makeParticipant(
   id: string,
@@ -29,6 +32,25 @@ it("shuffles participants", () => {
     const values = Object.values(assigned).sort();
     expect(new Set(values).size).toEqual(values.length);
     expect(values).toEqual(["1", "2", "3", "4", "5"]);
+    for (let i = 1; i <= values.length; i++) {
+      expect(assigned[i.toString()]).not.toEqual(i);
+    }
+  }
+});
+
+it("shuffles big list of participants", () => {
+  const size = 10_000;
+  const participants = Array.from({ length: size }).map((_, i) =>
+    makeParticipant(i.toString()),
+  );
+  const assigned = shuffleParticipants(participants);
+  const keys = Object.keys(assigned).sort();
+  expect(keys).toHaveLength(size);
+  const values = Object.values(assigned).sort();
+  expect(new Set(values).size).toEqual(values.length);
+  expect(values).toEqual(keys);
+  for (let i = 1; i <= values.length; i++) {
+    expect(assigned[i.toString()]).not.toEqual(i);
   }
 });
 
@@ -44,4 +66,15 @@ it("respects exclusions", () => {
     "2": "1",
     "3": "2",
   });
+});
+
+it("detetects circular exclusions", () => {
+  const participants = [
+    makeParticipant("1", ["2"]),
+    makeParticipant("2", ["3"]),
+    makeParticipant("3", ["1", "2"]),
+  ];
+  expect(() => shuffleParticipants(participants)).toThrow(
+    CircularExclusionError,
+  );
 });

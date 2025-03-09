@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-function NewGame() {
+function AddGame() {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -67,4 +67,4 @@ function NewGame() {
   );
 }
 
-export default NewGame;
+export default AddGame;

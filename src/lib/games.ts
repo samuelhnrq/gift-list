@@ -4,10 +4,11 @@ import { assertSession } from "@/auth";
 import { db } from "@/db";
 import { cache } from "react";
 import { game, participant, participantToGame } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { console } from "inspector";
 import { getCurrentParticipant } from "./participants";
+import { shuffleParticipants } from "./shuffleParticipants";
 
 export type GameType = typeof game.$inferSelect;
 export type NewGameType = typeof game.$inferInsert;
@@ -45,6 +46,66 @@ export const deleteGameAction = async (gameId: string): Promise<void> => {
   } catch (e) {
     console.error(e);
   }
+};
+
+export const shuffleParticipantsAction = async (
+  gameId: string,
+): Promise<string> => {
+  const profile = await getCurrentParticipant();
+  await db.transaction(async (tx) => {
+    const participants = await tx
+      .select({ participant })
+      .from(participant)
+      .innerJoin(
+        participantToGame,
+        eq(participantToGame.participantId, participant.id),
+      )
+      .innerJoin(game, eq(game.id, participantToGame.gameId))
+      .where(and(eq(game.creator, profile.id), eq(game.id, gameId)))
+      .execute();
+    const assigned = shuffleParticipants(
+      participants.map((x) => x.participant),
+    );
+    await tx
+      .insert(participantToGame)
+      .values(
+        Object.entries(assigned).map(([k, v]) => ({
+          gameId,
+          participantId: k,
+          givesTo: v,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: [participantToGame.participantId, participantToGame.gameId],
+        set: { givesTo: sql`excluded.gives_to` },
+      });
+    await tx
+      .update(game)
+      .set({ status: "shuffled" })
+      .where(eq(game.id, gameId));
+  });
+  revalidatePath(`/games/${gameId}`, "page");
+  return gameId;
+};
+
+export const clearGivesToAction = async (gameId: string): Promise<string> => {
+  const profile = await getCurrentParticipant();
+  await db.transaction(async (tx) => {
+    const affected = await tx
+      .update(game)
+      .set({ status: "open" })
+      .where(and(eq(game.id, gameId), eq(game.creator, profile.id)))
+      .returning({ ok: game.id });
+    if (affected.length === 0 || affected[0].ok !== gameId) {
+      tx.rollback();
+    }
+    await tx
+      .update(participantToGame)
+      .set({ givesTo: null })
+      .where(eq(participantToGame.gameId, gameId));
+  });
+  revalidatePath(`/games/${gameId}`, "page");
+  return gameId;
 };
 
 export const createGameActiton = async (form: FormData): Promise<void> => {

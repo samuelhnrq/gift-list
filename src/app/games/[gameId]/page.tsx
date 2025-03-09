@@ -1,16 +1,32 @@
 import AddParticipant from "@/components/AddParticipant";
-import ParticipantList, {
-  ParticipantSkeleton,
-} from "@/components/ParticipantList";
-import { getGame } from "@/lib/games";
+import ParticipantList from "@/components/ListParticipants";
+import ShuffleParticipants from "@/components/ShuffleParticipants";
+import { getGame, type GameType } from "@/lib/games";
 import { ArrowBack } from "@mui/icons-material";
-import { Button, Stack, Typography } from "@mui/material";
+import { Button, Chip, Stack, Typography } from "@mui/material";
 import Link from "next/link";
-import React, { Suspense } from "react";
+import React from "react";
 
 type GameDetailProps = {
   params: Promise<{ gameId: string }>;
 };
+
+const statusColors = {
+  open: "success",
+  shuffled: "warning",
+  closed: "error",
+} as const;
+
+function StatusPill({ game }: { game: GameType }) {
+  return (
+    <Chip
+      color={statusColors[game.status]}
+      sx={{ textTransform: "uppercase", fontSize: "1rem" }}
+      component="div"
+      label={game.status}
+    />
+  );
+}
 
 async function GameDetail({ params }: GameDetailProps) {
   const { gameId } = await params;
@@ -26,7 +42,7 @@ async function GameDetail({ params }: GameDetailProps) {
     );
   }
   return (
-    <Stack gap={{ xs: 1, md: 2 }} padding={2} maxHeight="100%">
+    <Stack gap={{ xs: 1, md: 2 }} padding={2} flex={1} flexWrap="nowrap">
       <Button
         variant="text"
         sx={{ mr: "auto" }}
@@ -36,12 +52,16 @@ async function GameDetail({ params }: GameDetailProps) {
       >
         Games
       </Button>
-      <Typography variant="h4">{game.name}</Typography>
+      <Stack direction="row">
+        <Typography variant="h4" flex="1">
+          {game.name}
+        </Typography>
+        <StatusPill game={game} />
+      </Stack>
       <AddParticipant game={game} />
       <Typography variant="h6">Participants</Typography>
-      <Suspense fallback={<ParticipantSkeleton />}>
-        <ParticipantList game={game} sx={{ overflow: "auto" }} />
-      </Suspense>
+      <ParticipantList game={game} />
+      <ShuffleParticipants game={game} />
     </Stack>
   );
 }

@@ -3,12 +3,13 @@
 import { assertSession } from "@/auth";
 import { db } from "@/db";
 import { game, participant, participantToGame, user } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { aliasedTable, and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
 export type ParticipantType = typeof participant.$inferSelect;
+export type ParticipantToGameType = typeof participantToGame.$inferSelect;
 
 export const copyUserAsParticipant = async (userId: string): Promise<void> => {
   const [newUser] = await db.select().from(user).where(eq(user.id, userId));
@@ -35,17 +36,19 @@ export const getCurrentParticipant = cache(async () => {
 
 export const getParticipantsOfGame = cache(async (gameId: string) => {
   const { id: pId } = await getCurrentParticipant();
+  const target = aliasedTable(participant, "target");
   const found = await db
-    .select({ participant, user })
+    .select({ participant, user, target })
     .from(participant)
     .leftJoin(user, eq(user.email, participant.userEmail))
     .innerJoin(
       participantToGame,
       eq(participantToGame.participantId, participant.id),
     )
+    .leftJoin(target, eq(target.id, participantToGame.givesTo))
     .innerJoin(game, eq(game.id, participantToGame.gameId))
     .where(and(eq(game.creator, pId), eq(game.id, gameId)))
-    .execute();
+    .orderBy(participantToGame.createdAt);
   return found;
 });
 

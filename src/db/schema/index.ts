@@ -1,6 +1,7 @@
 import {
   pgTable,
   text,
+  pgEnum,
   timestamp,
   uuid,
   primaryKey,
@@ -24,6 +25,7 @@ export const participantRelations = relations(participant, ({ one, many }) => ({
   }),
   participantGames: many(participantToGame),
 }));
+export const gameStatus = pgEnum("game_status", ["open", "shuffled", "closed"]);
 
 export const game = pgTable("game", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -31,6 +33,7 @@ export const game = pgTable("game", {
   creator: uuid("creator")
     .notNull()
     .references(() => participant.id, { onDelete: "cascade" }),
+  status: gameStatus("status").notNull().default("open"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -52,6 +55,11 @@ export const participantToGame = pgTable(
     gameId: uuid("game_id")
       .notNull()
       .references(() => game.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    givesTo: uuid("gives_to").references(() => participant.id, {
+      onDelete: "cascade",
+    }),
   },
   (t) => [primaryKey({ columns: [t.participantId, t.gameId] })],
 );

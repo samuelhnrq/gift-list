@@ -1,7 +1,7 @@
 "use client";
 
 import { createTheme } from "@mui/material";
-import { red, teal } from "@mui/material/colors";
+import { red, green } from "@mui/material/colors";
 
 export const theme = createTheme({
   cssVariables: true,
@@ -11,13 +11,13 @@ export const theme = createTheme({
   colorSchemes: {
     dark: {
       palette: {
-        primary: { main: teal[300] },
+        primary: { main: green[300] },
         secondary: { main: red[400] },
       },
     },
     light: {
       palette: {
-        secondary: { main: teal[200] },
+        secondary: { main: green.A200 },
         primary: { main: red[400] },
       },
     },
@@ -26,6 +26,11 @@ export const theme = createTheme({
     MuiSkeleton: {
       defaultProps: {
         animation: "wave",
+      },
+    },
+    MuiStack: {
+      defaultProps: {
+        useFlexGap: true,
       },
     },
   },
