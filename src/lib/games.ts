@@ -108,6 +108,16 @@ export const clearGivesToAction = async (gameId: string): Promise<string> => {
   return gameId;
 };
 
+export const closeGameAction = async (gameId: string): Promise<string> => {
+  const session = await assertSession();
+  await db
+    .update(game)
+    .set({ status: "closed" })
+    .where(and(eq(game.id, gameId), eq(game.creator, session.user.id)));
+  revalidatePath(`/games/${gameId}`, "page");
+  return gameId;
+};
+
 export const createGameActiton = async (form: FormData): Promise<void> => {
   console.log("form", form);
   const name = form.get("name");

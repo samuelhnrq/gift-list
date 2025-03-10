@@ -1,4 +1,7 @@
-import { getParticipantsOfGame } from "@/lib/participants";
+import {
+  getParticipantsOfGame,
+  type GameParticipant,
+} from "@/lib/participants";
 import {
   Avatar,
   Card,
@@ -11,25 +14,19 @@ import {
   type SxProps,
   type Theme,
 } from "@mui/material";
-import ParticipantActions from "./DeleteParticipant";
+import ParticipantActions from "./ActionsParticipant";
 import type { GameType } from "@/lib/games";
 import { Suspense } from "react";
 
-type ParticipantType = Awaited<
-  ReturnType<typeof getParticipantsOfGame>
->[number];
-
 interface ParticipantProps {
   game: GameType;
-  participant: ParticipantType;
+  participant: GameParticipant;
 }
 
 function Participant({ participant, game }: ParticipantProps) {
   return (
     <ListItem
-      secondaryAction={
-        <ParticipantActions game={game} partipantToGame={participant} />
-      }
+      secondaryAction={<ParticipantActions game={game} ptg={participant} />}
     >
       <ListItemAvatar>
         <Avatar
@@ -39,7 +36,7 @@ function Participant({ participant, game }: ParticipantProps) {
       </ListItemAvatar>
       <ListItemText>
         <Typography>{participant.user?.name || "No name"}</Typography>
-        <Typography variant="body2">
+        <Typography variant="body2" maxWidth="80%" noWrap>
           {participant.participant.userEmail}
         </Typography>
       </ListItemText>
@@ -69,7 +66,7 @@ async function ParticipantList({ game, sx }: ParticipantListProps) {
     >
       <List>
         {parties.map((x) => (
-          <Participant key={x.participant.id} game={game} participant={x} />
+          <Participant key={x.participant?.id} game={game} participant={x} />
         ))}
       </List>
     </Card>

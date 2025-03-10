@@ -1,6 +1,5 @@
 import AddParticipant from "@/components/AddParticipant";
 import ParticipantList from "@/components/ListParticipants";
-import ShuffleParticipants from "@/components/ShuffleParticipants";
 import { getGame, type GameType } from "@/lib/games";
 import { ArrowBack } from "@mui/icons-material";
 import { Button, Chip, Stack, Typography } from "@mui/material";
@@ -12,8 +11,8 @@ type GameDetailProps = {
 };
 
 const statusColors = {
-  open: "success",
-  shuffled: "warning",
+  open: "info",
+  shuffled: "success",
   closed: "error",
 } as const;
 
@@ -21,7 +20,11 @@ function StatusPill({ game }: { game: GameType }) {
   return (
     <Chip
       color={statusColors[game.status]}
-      sx={{ textTransform: "uppercase", fontSize: "1rem" }}
+      sx={{
+        textTransform: "uppercase",
+        fontSize: "1rem",
+        color: "textSecondary",
+      }}
       component="div"
       label={game.status}
     />
@@ -61,7 +64,6 @@ async function GameDetail({ params }: GameDetailProps) {
       <AddParticipant game={game} />
       <Typography variant="h6">Participants</Typography>
       <ParticipantList game={game} />
-      <ShuffleParticipants game={game} />
     </Stack>
   );
 }

@@ -24,6 +24,7 @@ export const participantRelations = relations(participant, ({ one, many }) => ({
     references: [user.email],
   }),
   participantGames: many(participantToGame),
+  recievesFrom: many(participantToGame),
 }));
 export const gameStatus = pgEnum("game_status", ["open", "shuffled", "closed"]);
 
@@ -74,6 +75,10 @@ export const participantToGameRelations = relations(
     game: one(game, {
       fields: [participantToGame.gameId],
       references: [game.id],
+    }),
+    givesTo: one(participant, {
+      fields: [participantToGame.givesTo],
+      references: [participant.id],
     }),
   }),
 );

@@ -10,6 +10,11 @@ import { cache } from "react";
 
 export type ParticipantType = typeof participant.$inferSelect;
 export type ParticipantToGameType = typeof participantToGame.$inferSelect;
+export type GameParticipant = {
+  participant: ParticipantType;
+  user?: typeof user.$inferSelect;
+  target?: ParticipantType;
+};
 
 export const copyUserAsParticipant = async (userId: string): Promise<void> => {
   const [newUser] = await db.select().from(user).where(eq(user.id, userId));
@@ -37,7 +42,7 @@ export const getCurrentParticipant = cache(async () => {
 export const getParticipantsOfGame = cache(async (gameId: string) => {
   const { id: pId } = await getCurrentParticipant();
   const target = aliasedTable(participant, "target");
-  const found = await db
+  const found: GameParticipant[] = await db
     .select({ participant, user, target })
     .from(participant)
     .leftJoin(user, eq(user.email, participant.userEmail))
@@ -45,10 +50,11 @@ export const getParticipantsOfGame = cache(async (gameId: string) => {
       participantToGame,
       eq(participantToGame.participantId, participant.id),
     )
-    .leftJoin(target, eq(target.id, participantToGame.givesTo))
+    .leftJoin(target, eq(participantToGame.givesTo, target.id))
     .innerJoin(game, eq(game.id, participantToGame.gameId))
     .where(and(eq(game.creator, pId), eq(game.id, gameId)))
-    .orderBy(participantToGame.createdAt);
+    .orderBy(participantToGame.createdAt)
+    .execute();
   return found;
 });
 
