@@ -1,4 +1,4 @@
-import type { ParticipantType } from "./participants.js";
+import type { ParticipantToGameType } from "./models";
 
 function pickRandom<T>(arr: T[]): [number, T] {
   if (arr.length === 0) {
@@ -12,23 +12,23 @@ function pickRandom<T>(arr: T[]): [number, T] {
 }
 
 export class CircularExclusionError extends Error {
-  public readonly target: ParticipantType;
-  constructor(current: ParticipantType) {
-    super(`${current.id} has circular exclusions`);
+  public readonly id: string;
+  constructor(id: string) {
+    super(`${id} has circular exclusions`);
     this.name = "CircularExclusionError";
-    this.target = current;
+    this.id = id;
   }
 }
 
 /**  assign participants to each other, respecting exclusions */
 export function shuffleParticipants(
-  participants: ParticipantType[],
+  participants: ParticipantToGameType[],
 ): Record<string, string> {
   const assigned: Record<string, string> = {};
   const failedToAssing = new Set<string>();
-  const remaining = participants.map((x) => x.id);
-  const userMap: Record<string, ParticipantType> = Object.fromEntries(
-    participants.map((x) => [x.id, x]),
+  const remaining = participants.map((x) => x.participantId);
+  const userMap: Record<string, ParticipantToGameType> = Object.fromEntries(
+    participants.map((x) => [x.participantId, x]),
   );
   let firstTarget: string | null = null;
   let current = participants[0];
@@ -40,16 +40,16 @@ export function shuffleParticipants(
     if (current.exclusions.includes(target)) {
       failedToAssing.add(target);
       if (failedToAssing.size === remaining.length) {
-        throw new CircularExclusionError(current);
+        throw new CircularExclusionError(current.participantId);
       }
       continue;
     }
     firstTarget ??= target;
     failedToAssing.clear();
-    assigned[current.id] = target;
+    assigned[current.participantId] = target;
     current = userMap[target];
     remaining.splice(i, 1);
   }
-  assigned[current.id] = firstTarget!;
+  assigned[current.participantId] = firstTarget!;
   return assigned;
 }

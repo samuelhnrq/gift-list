@@ -1,6 +1,6 @@
 "use client";
 
-import { authClient } from "@/app/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { Button, CircularProgress, Stack, Typography } from "@mui/material";
 import type { User } from "better-auth";
 import { useRouter } from "next/navigation";

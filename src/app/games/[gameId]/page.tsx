@@ -1,6 +1,7 @@
 import AddParticipant from "@/components/AddParticipant";
 import ParticipantList from "@/components/ListParticipants";
-import { getGame, type GameType } from "@/lib/games";
+import { getGame } from "@/lib/games";
+import type { GameType } from "@/lib/models";
 import { ArrowBack } from "@mui/icons-material";
 import { Button, Chip, Stack, Typography } from "@mui/material";
 import Link from "next/link";

@@ -1,7 +1,6 @@
 "use client";
 
-import type { GameType } from "@/lib/games";
-import type { GameParticipant } from "@/lib/participants";
+import { updateParticipantGameAction } from "@/lib/participants";
 import { Edit } from "@mui/icons-material";
 import {
   Button,
@@ -13,19 +12,39 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { useState } from "react";
+import {
+  useState,
+  useActionState,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import Exclusions from "./Exclusions";
+import type { GameParticipant } from "@/lib/models";
 
 export type EditGameParticipantProps = {
-  game: GameType;
-  partipantToGame: GameParticipant;
+  ptg: GameParticipant;
 };
 
-function EditGameParticipant({
-  partipantToGame: ptg,
-  game,
-}: EditGameParticipantProps) {
+function EditGameParticipant({ ptg }: EditGameParticipantProps) {
   const [open, setOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [, updateAction, isPending] = useActionState(
+    updateParticipantGameAction,
+    ptg,
+  );
+  const handleSubmit = useCallback(
+    (formData: FormData) => {
+      updateAction(formData);
+      setOpen(false);
+    },
+    [updateAction],
+  );
+  useEffect(() => {
+    if (open) {
+      formRef.current?.reset();
+    }
+  }, [open]);
   return (
     <>
       <IconButton onClick={() => setOpen(true)}>
@@ -38,25 +57,31 @@ function EditGameParticipant({
         fullWidth
         maxWidth="xs"
       >
-        <DialogTitle noWrap>
+        <DialogTitle noWrap sx={{ pb: 0 }}>
           Edit {ptg.user?.name || ptg.participant.userEmail}
         </DialogTitle>
-        <form>
+        <form action={handleSubmit} ref={formRef}>
           <DialogContent>
             <Stack gap={2}>
               <TextField
                 variant="filled"
+                name="alias"
                 label="Name alias (in this game)"
+                defaultValue={ptg.ptg.alias}
                 fullWidth
               />
-              <Exclusions game={game} participant={ptg.participant} />
+              <Exclusions ptg={ptg} />
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button type="button" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              onClick={() => setOpen(false)}
+              disabled={isPending}
+            >
               Cancel
             </Button>
-            <Button type="submit" variant="contained">
+            <Button type="submit" variant="contained" loading={isPending}>
               Save
             </Button>
           </DialogActions>

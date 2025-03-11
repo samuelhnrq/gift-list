@@ -1,9 +1,5 @@
 "use client";
-import type { GameType } from "@/lib/games";
-import {
-  deleteParticipantAction,
-  type GameParticipant,
-} from "@/lib/participants";
+import { deleteParticipantAction } from "@/lib/participants";
 import { Delete } from "@mui/icons-material";
 import {
   Chip,
@@ -14,17 +10,15 @@ import {
 } from "@mui/material";
 import { useRef, useState } from "react";
 import EditGameParticipant from "./EditGameParticipant";
+import type { GameParticipant, GameType } from "@/lib/models";
 
 interface ActionsParticipantProps {
   game: GameType;
   ptg: GameParticipant;
 }
 
-function ParticipantActions({
-  game,
-  ptg: partipantToGame,
-}: ActionsParticipantProps) {
-  const pid = partipantToGame.participant.id;
+function ParticipantActions({ game, ptg }: ActionsParticipantProps) {
+  const pid = ptg.participant.id;
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -54,24 +48,20 @@ function ParticipantActions({
             horizontal: "left",
           }}
         >
-          <Typography sx={{ p: 2 }}>
-            {partipantToGame.target?.userEmail}
-          </Typography>
+          <Typography sx={{ p: 2 }}>{ptg.target?.userEmail}</Typography>
         </Popover>
       </>
     );
   }
   if (game.creator === pid) {
-    return (
-      <EditGameParticipant game={game} partipantToGame={partipantToGame} />
-    );
+    return <EditGameParticipant ptg={ptg} />;
   }
   if (loading) {
     return <CircularProgress size={24} />;
   }
   return (
     <>
-      <EditGameParticipant game={game} partipantToGame={partipantToGame} />
+      <EditGameParticipant ptg={ptg} />
       <IconButton
         onClick={() => {
           setLoading(true);

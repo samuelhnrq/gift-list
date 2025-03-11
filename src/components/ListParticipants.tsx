@@ -1,7 +1,4 @@
-import {
-  getParticipantsOfGame,
-  type GameParticipant,
-} from "@/lib/participants";
+import { getParticipantsOfGame } from "@/lib/participants";
 import {
   Avatar,
   Card,
@@ -15,8 +12,8 @@ import {
   type Theme,
 } from "@mui/material";
 import ParticipantActions from "./ActionsParticipant";
-import type { GameType } from "@/lib/games";
 import { Suspense } from "react";
+import type { GameParticipant, GameType } from "@/lib/models";
 
 interface ParticipantProps {
   game: GameType;
@@ -35,7 +32,9 @@ function Participant({ participant, game }: ParticipantProps) {
         />
       </ListItemAvatar>
       <ListItemText>
-        <Typography>{participant.user?.name || "No name"}</Typography>
+        <Typography>
+          {participant.ptg.alias || participant.user?.name || "No name"}
+        </Typography>
         <Typography variant="body2" maxWidth="80%" noWrap>
           {participant.participant.userEmail}
         </Typography>
@@ -56,7 +55,7 @@ async function ParticipantList({ game, sx }: ParticipantListProps) {
     <Card
       sx={[
         {
-          width: "calc(65 * var(--mui-spacing))",
+          width: "min(600px, 100%)",
           maxWidth: "100%",
           maxHeight: "50vh",
           overflow: "auto",
@@ -75,7 +74,7 @@ async function ParticipantList({ game, sx }: ParticipantListProps) {
 
 function ParticipantSkeleton() {
   return (
-    <Card sx={{ width: "calc(65 * var(--mui-spacing))", maxWidth: "100%" }}>
+    <Card sx={{ width: "min(50vw, 100%)" }}>
       <List>
         {Array.from({ length: 2 }).map((_, i) => (
           <ListItem key={i}>

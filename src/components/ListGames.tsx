@@ -1,4 +1,5 @@
-import { deleteGameAction, getGames, type GameType } from "@/lib/games";
+import { deleteGameAction, getGames } from "@/lib/games";
+import type { GameType } from "@/lib/models";
 import { Delete } from "@mui/icons-material";
 import {
   Card,

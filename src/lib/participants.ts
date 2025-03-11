@@ -3,18 +3,12 @@
 import { assertSession } from "@/auth";
 import { db } from "@/db";
 import { game, participant, participantToGame, user } from "@/db/schema";
-import { aliasedTable, and, eq } from "drizzle-orm";
+import { aliasedTable, and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-
-export type ParticipantType = typeof participant.$inferSelect;
-export type ParticipantToGameType = typeof participantToGame.$inferSelect;
-export type GameParticipant = {
-  participant: ParticipantType;
-  user?: typeof user.$inferSelect;
-  target?: ParticipantType;
-};
+import type { GameParticipant } from "./models";
+import { notifyParticipant } from "./email";
 
 export const copyUserAsParticipant = async (userId: string): Promise<void> => {
   const [newUser] = await db.select().from(user).where(eq(user.id, userId));
@@ -43,7 +37,7 @@ export const getParticipantsOfGame = cache(async (gameId: string) => {
   const { id: pId } = await getCurrentParticipant();
   const target = aliasedTable(participant, "target");
   const found: GameParticipant[] = await db
-    .select({ participant, user, target })
+    .select({ participant, user, target, ptg: participantToGame })
     .from(participant)
     .leftJoin(user, eq(user.email, participant.userEmail))
     .innerJoin(
@@ -82,11 +76,56 @@ export const deleteParticipantAction = async (
       }
       await tx
         .delete(participantToGame)
-        .where(and(eq(participantToGame.participantId, participantId)));
+        .where(
+          and(
+            eq(participantToGame.participantId, participantId),
+            eq(participantToGame.gameId, gameId),
+          ),
+        );
+      await tx
+        .update(participantToGame)
+        .set({ exclusions: sql`array_remove(exclusions, ${participantId})` })
+        .where(and(eq(participantToGame.gameId, gameId)));
     });
     revalidatePath(`/games/${gameId}`, "page");
   } catch (e) {
     console.error(e);
+  }
+};
+
+export const updateParticipantGameAction = async (
+  ptg: GameParticipant,
+  formData: FormData,
+): Promise<GameParticipant> => {
+  const alias = formData.get("alias")?.toString() || null;
+  const exclusionsTxt = formData.get("exclusions")?.toString();
+  const exclusions = (exclusionsTxt && exclusionsTxt.split(",")) || [];
+  console.log("updating participant", ptg.participant.id, alias, exclusions);
+  const profile = await getCurrentParticipant();
+  try {
+    await db.transaction(async (tx) => {
+      const cont = await tx.$count(
+        game,
+        and(eq(game.id, ptg.ptg.gameId), eq(game.creator, profile.id)),
+      );
+      if (cont <= 0 || cont > 1) {
+        return;
+      }
+      await tx
+        .update(participantToGame)
+        .set({ alias, exclusions, updatedAt: sql`now()` })
+        .where(
+          and(
+            eq(participantToGame.participantId, ptg.ptg.participantId),
+            eq(participantToGame.gameId, ptg.ptg.gameId),
+          ),
+        );
+    });
+    revalidatePath(`/games/${ptg.ptg.gameId}`, "page");
+    return ptg;
+  } catch (e) {
+    console.error(e);
+    return ptg;
   }
 };
 
@@ -132,4 +171,31 @@ export const addParticipantAction = async (
     console.error(e);
     return gameId;
   }
+};
+
+export const notifyParticipantsAction = async (gameId: string) => {
+  const profile = await getCurrentParticipant();
+  if (!game) {
+    return;
+  }
+  const recipients = await db
+    .select({
+      participantToGame,
+      user,
+      game,
+      participant,
+      ptg: participantToGame,
+    })
+    .from(participantToGame)
+    .innerJoin(participant, eq(participant.id, participantToGame.participantId))
+    .leftJoin(user, eq(user.email, participant.userEmail))
+    .innerJoin(game, eq(game.id, participantToGame.gameId))
+    .where(
+      and(
+        eq(game.id, gameId),
+        eq(game.creator, profile.id),
+        eq(game.status, "shuffled"),
+      ),
+    );
+  await Promise.all(recipients.map((x) => notifyParticipant(x)));
 };

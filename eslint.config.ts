@@ -21,6 +21,7 @@ const eslintConfig = tseslint.config([
     "next/typescript",
     "plugin:@next/next/recommended",
   ),
+  tseslint.configs.strict,
   {
     ignores: ["src/db/drizzle", ".next"],
   },

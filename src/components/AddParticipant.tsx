@@ -1,10 +1,10 @@
 "use client";
 
-import type { GameType } from "@/lib/games";
 import { addParticipantAction } from "@/lib/participants";
 import { Grid2, LinearProgress, TextField } from "@mui/material";
 import { useActionState } from "react";
 import GameActions from "./GameActions";
+import type { GameType } from "@/lib/models";
 
 function AddParticipant({ game }: { game: GameType }) {
   const [, action, isPending] = useActionState(addParticipantAction, game.id);

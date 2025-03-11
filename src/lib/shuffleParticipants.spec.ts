@@ -1,4 +1,4 @@
-import type { ParticipantType } from "./participants";
+import type { ParticipantToGameType } from "./models";
 import {
   CircularExclusionError,
   shuffleParticipants,
@@ -7,13 +7,15 @@ import {
 function makeParticipant(
   id: string,
   exclusions: string[] = [],
-): ParticipantType {
+): ParticipantToGameType {
   return {
-    id,
-    exclusions,
+    participantId: id,
+    gameId: "gameId",
     createdAt: new Date(),
     updatedAt: new Date(),
-    userEmail: "",
+    givesTo: null,
+    alias: null,
+    exclusions,
   };
 }
 

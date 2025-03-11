@@ -4,8 +4,8 @@ import {
   clearGivesToAction,
   closeGameAction,
   shuffleParticipantsAction,
-  type GameType,
 } from "@/lib/games";
+import type { GameType } from "@/lib/models";
 import { Notifications, Shuffle, Undo } from "@mui/icons-material";
 import { Button, ButtonGroup, type SxProps, type Theme } from "@mui/material";
 import { startTransition, useActionState, type ReactNode } from "react";

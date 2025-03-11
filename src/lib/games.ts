@@ -9,9 +9,7 @@ import { revalidatePath } from "next/cache";
 import { console } from "inspector";
 import { getCurrentParticipant } from "./participants";
 import { shuffleParticipants } from "./shuffleParticipants";
-
-export type GameType = typeof game.$inferSelect;
-export type NewGameType = typeof game.$inferInsert;
+import type { GameType, NewGameType } from "./models";
 
 export const getGames = cache(async (): Promise<GameType[]> => {
   const session = await assertSession();
@@ -54,17 +52,13 @@ export const shuffleParticipantsAction = async (
   const profile = await getCurrentParticipant();
   await db.transaction(async (tx) => {
     const participants = await tx
-      .select({ participant })
-      .from(participant)
-      .innerJoin(
-        participantToGame,
-        eq(participantToGame.participantId, participant.id),
-      )
+      .select({ participantToGame })
+      .from(participantToGame)
       .innerJoin(game, eq(game.id, participantToGame.gameId))
       .where(and(eq(game.creator, profile.id), eq(game.id, gameId)))
       .execute();
     const assigned = shuffleParticipants(
-      participants.map((x) => x.participant),
+      participants.map((x) => x.participantToGame),
     );
     await tx
       .insert(participantToGame)
@@ -77,7 +71,7 @@ export const shuffleParticipantsAction = async (
       )
       .onConflictDoUpdate({
         target: [participantToGame.participantId, participantToGame.gameId],
-        set: { givesTo: sql`excluded.gives_to` },
+        set: { givesTo: sql`excluded.gives_to`, updatedAt: sql`now()` },
       });
     await tx
       .update(game)
@@ -93,7 +87,7 @@ export const clearGivesToAction = async (gameId: string): Promise<string> => {
   await db.transaction(async (tx) => {
     const affected = await tx
       .update(game)
-      .set({ status: "open" })
+      .set({ status: "open", updatedAt: sql`now()` })
       .where(and(eq(game.id, gameId), eq(game.creator, profile.id)))
       .returning({ ok: game.id });
     if (affected.length === 0 || affected[0].ok !== gameId) {
@@ -101,7 +95,7 @@ export const clearGivesToAction = async (gameId: string): Promise<string> => {
     }
     await tx
       .update(participantToGame)
-      .set({ givesTo: null })
+      .set({ givesTo: null, updatedAt: sql`now()` })
       .where(eq(participantToGame.gameId, gameId));
   });
   revalidatePath(`/games/${gameId}`, "page");
@@ -112,7 +106,7 @@ export const closeGameAction = async (gameId: string): Promise<string> => {
   const session = await assertSession();
   await db
     .update(game)
-    .set({ status: "closed" })
+    .set({ status: "closed", updatedAt: sql`now()` })
     .where(and(eq(game.id, gameId), eq(game.creator, session.user.id)));
   revalidatePath(`/games/${gameId}`, "page");
   return gameId;

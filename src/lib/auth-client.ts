@@ -11,6 +11,8 @@ if (process.env.VERCEL_URL) {
   baseURL = `https://${process.env.VERCEL_URL}`;
 }
 
+export const BASE_URL = baseURL;
+
 export const authClient = createAuthClient({
   baseURL: baseURL,
   plugins: [
