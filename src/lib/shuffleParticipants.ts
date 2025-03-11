@@ -50,6 +50,6 @@ export function shuffleParticipants(
     current = userMap[target];
     remaining.splice(i, 1);
   }
-  assigned[current.participantId] = firstTarget!;
+  assigned[current.participantId] = firstTarget || "";
   return assigned;
 }

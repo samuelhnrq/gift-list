@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "test": "jest",
-    "lint": "next lint && prettier src --check"
+    "lint": "next lint && prettier src --check && tsc --noEmit"
   },
   "jest": {
     "transform": {
