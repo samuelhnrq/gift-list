@@ -1,0 +1,10 @@
+CREATE TYPE "public"."game_status" AS ENUM('open', 'shuffled', 'closed');
+ALTER TABLE "game" ADD COLUMN "description" text;
+ALTER TABLE "game" ADD COLUMN "status" "game_status" DEFAULT 'open' NOT NULL;
+ALTER TABLE "participants_to_games" ADD COLUMN "created_at" timestamp DEFAULT now() NOT NULL;
+ALTER TABLE "participants_to_games" ADD COLUMN "updated_at" timestamp DEFAULT now() NOT NULL;
+ALTER TABLE "participants_to_games" ADD COLUMN "gives_to" uuid;
+ALTER TABLE "participants_to_games" ADD COLUMN "exclusions" uuid[] DEFAULT '{}' NOT NULL;
+ALTER TABLE "participants_to_games" ADD COLUMN "alias" text;
+ALTER TABLE "participants_to_games" ADD CONSTRAINT "participants_to_games_gives_to_participant_id_fk" FOREIGN KEY ("gives_to") REFERENCES "public"."participant"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "participant" DROP COLUMN "exclusions";
