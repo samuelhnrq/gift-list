@@ -65,7 +65,7 @@ export const shuffleParticipantsAction = async (
         assignments = shuffleParticipants(
           participants.map((x) => x.participantToGame),
         );
-      } catch (e) {
+      } catch {
         failure = "Failed to shuffle, maybe circular exclusions?";
         tx.rollback();
       }

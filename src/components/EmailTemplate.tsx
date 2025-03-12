@@ -1,4 +1,3 @@
-import { BASE_URL } from "@/lib/auth-client";
 import type { AssignedNotification } from "@/lib/models";
 
 function getName(target: AssignedNotification): string {
@@ -18,20 +17,14 @@ function EmailTemplate({
   from: AssignedNotification;
   to: AssignedNotification;
 }) {
-  let name = getName(from);
-  let nameTo = getName(to);
+  const name = getName(from);
+  const nameTo = getName(to);
   return (
     <div>
       <h2>Hello {name}</h2>
-      <p>
-        You have been assigned a partner in game {from.game.name}. You can view
-        the game
-        <a href={`${BASE_URL}/games/${from.game.id}`}> here</a>.
-        <br />
-        <br />
-        <p>Your partner is {nameTo}</p>
-        <br />
-      </p>
+      <p>You have been assigned a partner in game {from.game.name}.</p>
+      <br />
+      <p>Your partner is {nameTo}</p>
     </div>
   );
 }

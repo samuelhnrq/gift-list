@@ -1,15 +1,9 @@
 "use client";
+
 import { deleteParticipantAction } from "@/lib/participants";
 import { Delete } from "@mui/icons-material";
-import {
-  Chip,
-  CircularProgress,
-  IconButton,
-  Popover,
-  Tooltip,
-  Typography,
-} from "@mui/material";
-import { useRef, useState } from "react";
+import { Chip, CircularProgress, IconButton, Tooltip } from "@mui/material";
+import { useState } from "react";
 import EditGameParticipant from "./EditGameParticipant";
 import type { GameParticipant, GameType } from "@/lib/models";
 
