@@ -21,6 +21,7 @@ export const getGames = cache(async (): Promise<GameType[]> => {
     .from(game)
     .innerJoin(participant, eq(participant.id, game.creator))
     .where(eq(participant.userEmail, session.user.email))
+    .orderBy(game.createdAt)
     .execute();
   return games.map((game) => game.game);
 });
@@ -125,39 +126,43 @@ export const clearGivesToAction = async (gameId: string): Promise<string> => {
   return gameId;
 };
 
-export const createGameActiton = async (form: FormData): Promise<void> => {
+export const upsertGameAction = async (
+  gameId: string,
+  form: FormData,
+): Promise<string> => {
   const name = form.get("name");
-  if (typeof name !== "string") {
-    throw new Error("Name is not a string");
+  if (typeof name !== "string" || name.length < 3) {
+    console.log("Name is missing or too short");
+    return "Name is missing or too short";
   }
-  const session = await assertSession();
+  const currentParticipant = await getCurrentParticipant();
   await db.transaction(async (tx) => {
-    // Intentionally not using cached Pariticipant from ./participants (might be out of date)
-    const [currentParticipant] = await tx
-      .select()
-      .from(participant)
-      .where(eq(participant.userEmail, session.user.email));
-
-    if (!currentParticipant) {
-      tx.rollback();
-    }
     const newGame: NewGameType = {
       name,
       creator: currentParticipant.id,
     };
-    const [result] = await tx.insert(game).values(newGame).returning({
-      id: game.id,
-      name: game.name,
-      createdAt: game.createdAt,
-      updatedAt: game.updatedAt,
-    });
+    if (gameId.length > 0) {
+      newGame.id = gameId;
+    }
+    const [result] = await tx
+      .insert(game)
+      .values(newGame)
+      .onConflictDoUpdate({
+        target: [game.id],
+        set: { name: newGame.name, updatedAt: sql`now()` },
+      })
+      .returning({
+        id: game.id,
+      });
+    console.log("NEW game", result);
     if (!result) {
       tx.rollback();
     }
     await tx
       .insert(participantToGame)
       .values({ participantId: currentParticipant.id, gameId: result.id })
-      .execute();
+      .onConflictDoNothing();
   });
   revalidatePath("/games");
+  return "";
 };

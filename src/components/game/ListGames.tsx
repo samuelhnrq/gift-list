@@ -13,6 +13,7 @@ import {
 import dayjs from "dayjs";
 import Link from "next/link";
 import { Suspense } from "react";
+import UpsertGame from "./UpsertGame";
 
 function GameCard({ game }: { game: GameType }) {
   return (
@@ -26,6 +27,7 @@ function GameCard({ game }: { game: GameType }) {
         </CardContent>
       </Link>
       <CardActions>
+        <UpsertGame game={game} />
         <IconButton onClick={deleteGameAction.bind(null, game.id)}>
           <Delete />
         </IconButton>

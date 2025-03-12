@@ -7,7 +7,7 @@ import { aliasedTable, and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import type { GameParticipant } from "./models";
+import type { GameParticipant, ParticipantType } from "./models";
 import { notifyParticipant } from "./email";
 
 export const copyUserAsParticipant = async (userId: string): Promise<void> => {
@@ -21,17 +21,25 @@ export const copyUserAsParticipant = async (userId: string): Promise<void> => {
     .onConflictDoNothing({ target: participant.userEmail });
 };
 
-export const getCurrentParticipant = cache(async () => {
-  const session = await assertSession();
-  const [participantUser] = await db
-    .select()
-    .from(participant)
-    .where(eq(participant.userEmail, session.user.email));
-  if (!participantUser) {
-    throw redirect("/");
-  }
-  return participantUser;
-});
+export const getCurrentParticipant = cache(
+  async (): Promise<ParticipantType> => {
+    const session = await assertSession();
+    const ptp = await db.transaction(async (tx) => {
+      await tx
+        .insert(participant)
+        .values({ userEmail: session.user.email })
+        .onConflictDoNothing({ target: participant.userEmail });
+      return tx.query.participant.findFirst({
+        where: eq(participant.userEmail, session.user.email),
+      });
+    });
+    if (!ptp?.id) {
+      console.log("no participant found");
+      throw redirect("/");
+    }
+    return ptp;
+  },
+);
 
 export const getParticipantsOfGame = cache(async (gameId: string) => {
   const { id: pId } = await getCurrentParticipant();

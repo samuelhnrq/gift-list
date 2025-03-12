@@ -1,7 +1,7 @@
 import { assertSession } from "@/lib/auth";
 import ListGames from "@/components/game/ListGames";
-import AddGame from "@/components/game/AddGame";
 import { Stack, Typography } from "@mui/material";
+import UpsertGame from "@/components/game/UpsertGame";
 
 async function GamesList() {
   const session = await assertSession();
@@ -11,7 +11,7 @@ async function GamesList() {
         Welcome {session.user.name}
       </Typography>
       <ListGames />
-      <AddGame />
+      <UpsertGame />
     </Stack>
   );
 }
