@@ -1,9 +1,10 @@
-import AddParticipant from "@/components/AddParticipant";
-import ParticipantList from "@/components/ListParticipants";
+import GameActions from "@/components/game/ActionsGame";
+import AddParticipant from "@/components/participant/AddParticipant";
+import ParticipantList from "@/components/participant/ListParticipants";
 import { getGame } from "@/lib/games";
 import type { GameType } from "@/lib/models";
 import { ArrowBack } from "@mui/icons-material";
-import { Button, Chip, Stack, Typography } from "@mui/material";
+import { Button, Chip, Grid2, Stack, Typography } from "@mui/material";
 import Link from "next/link";
 import React from "react";
 
@@ -68,7 +69,17 @@ async function GameDetail({ params }: GameDetailProps) {
           <StatusPill game={game} />
         </Stack>
       </Stack>
-      <AddParticipant game={game} />
+      <div>
+        Add participants:
+        <Grid2 container spacing={1} alignItems="start">
+          <Grid2 size={{ xs: 10, md: 6 }}>
+            <AddParticipant game={game} />
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <GameActions game={game} sx={{ float: "right" }} />
+          </Grid2>
+        </Grid2>
+      </div>
       <Typography variant="h6">Participants</Typography>
       <ParticipantList game={game} />
     </Stack>

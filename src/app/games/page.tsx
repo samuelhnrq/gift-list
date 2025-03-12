@@ -1,6 +1,6 @@
-import { assertSession } from "@/auth";
-import ListGames from "@/components/ListGames";
-import AddGame from "@/components/AddGame";
+import { assertSession } from "@/lib/auth";
+import ListGames from "@/components/game/ListGames";
+import AddGame from "@/components/game/AddGame";
 import { Stack, Typography } from "@mui/material";
 
 async function GamesList() {

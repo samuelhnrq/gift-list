@@ -1,2 +1,7 @@
+- shuffle not 1
+- validate game creation
+- search games
+- filter games
+- filter participants
 - import csv people
 - better more complex authorization

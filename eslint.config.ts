@@ -4,7 +4,7 @@ import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
 import eslintConfigPrettier from "eslint-config-prettier";
 import js from "@eslint/js";
-import { jest } from "globals";
+import globals from "globals";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,12 +21,11 @@ const eslintConfig = tseslint.config([
     "next/typescript",
     "plugin:@next/next/recommended",
   ),
-  tseslint.configs.strict,
   {
     ignores: ["src/db/drizzle", ".next"],
   },
   {
-    languageOptions: { globals: { ...jest } },
+    languageOptions: { globals: { ...globals.vitest } },
   },
 ]);
 

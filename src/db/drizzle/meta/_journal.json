@@ -35,14 +35,14 @@
       "version": "7",
       "when": 1741471984933,
       "tag": "0004_jazzy_boom_boom",
-      "breakpoints": false
+      "breakpoints": true
     },
     {
       "idx": 5,
       "version": "7",
       "when": 1741736312695,
       "tag": "0005_warm_doctor_doom",
-      "breakpoints": false
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@ import {
   CircularExclusionError,
   shuffleParticipants,
 } from "./shuffleParticipants";
+import { it, expect } from "vitest";
 
 function makeParticipant(
   id: string,
@@ -54,6 +55,13 @@ it("shuffles big list of participants", () => {
   for (let i = 1; i <= values.length; i++) {
     expect(assigned[i.toString()]).not.toEqual(i);
   }
+});
+
+it("enforces minimum number of participants", () => {
+  expect(() => shuffleParticipants([])).toThrow("Not enough participants");
+  expect(() => shuffleParticipants([makeParticipant("1")])).toThrow(
+    "Not enough participants",
+  );
 });
 
 it("respects exclusions", () => {

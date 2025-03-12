@@ -1,6 +1,6 @@
 "use server";
 
-import { assertSession } from "@/auth";
+import { assertSession } from "@/lib/auth";
 import { db } from "@/db";
 import { cache } from "react";
 import { game, participant, participantToGame } from "@/db/schema";
@@ -8,7 +8,10 @@ import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { console } from "inspector";
 import { getCurrentParticipant } from "./participants";
-import { shuffleParticipants } from "./shuffleParticipants";
+import {
+  CircularExclusionError,
+  shuffleParticipants,
+} from "./shuffleParticipants";
 import type { GameType, NewGameType } from "./models";
 
 export const getGames = cache(async (): Promise<GameType[]> => {
@@ -54,18 +57,25 @@ export const shuffleParticipantsAction = async (
   try {
     await db.transaction(async (tx) => {
       const participants = await tx
-        .select({ participantToGame })
+        .select({ participantToGame, participant })
         .from(participantToGame)
         .innerJoin(game, eq(game.id, participantToGame.gameId))
+        .innerJoin(
+          participant,
+          eq(participant.id, participantToGame.participantId),
+        )
         .where(and(eq(game.creator, profile.id), eq(game.id, gameId)))
         .execute();
-      console.log("participants", participants);
       let assignments: Record<string, string> = {};
       try {
         assignments = shuffleParticipants(
           participants.map((x) => x.participantToGame),
         );
-      } catch {
+      } catch (err) {
+        if (err instanceof CircularExclusionError) {
+          const badUser = participants.find((x) => x.participant.id === err.id);
+          failure = `Participant ${badUser?.participant.userEmail} has circular exclusions`;
+        }
         failure = "Failed to shuffle, maybe circular exclusions?";
         tx.rollback();
       }

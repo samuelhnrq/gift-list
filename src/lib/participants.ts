@@ -1,6 +1,6 @@
 "use server";
 
-import { assertSession } from "@/auth";
+import { assertSession } from "@/lib/auth";
 import { db } from "@/db";
 import { game, participant, participantToGame, user } from "@/db/schema";
 import { aliasedTable, and, eq, sql } from "drizzle-orm";

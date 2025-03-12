@@ -13,10 +13,10 @@ function pickRandom<T>(arr: T[]): [number, T] {
 
 export class CircularExclusionError extends Error {
   public readonly id: string;
-  constructor(id: string) {
-    super(`${id} has circular exclusions`);
+  constructor(participant: ParticipantToGameType) {
+    super(`${participant.participantId} has circular exclusions`);
     this.name = "CircularExclusionError";
-    this.id = id;
+    this.id = participant.participantId;
   }
 }
 
@@ -24,6 +24,9 @@ export class CircularExclusionError extends Error {
 export function shuffleParticipants(
   participants: ParticipantToGameType[],
 ): Record<string, string> {
+  if (participants.length < 2) {
+    throw new Error("Not enough participants");
+  }
   const assigned: Record<string, string> = {};
   const failedToAssing = new Set<string>();
   const remaining = participants.map((x) => x.participantId);
@@ -37,11 +40,10 @@ export function shuffleParticipants(
     if (failedToAssing.has(target)) {
       continue;
     }
-    console.log("checklin exclusions", current.alias, current.exclusions);
     if (current.exclusions.includes(target)) {
       failedToAssing.add(target);
       if (failedToAssing.size === remaining.length) {
-        throw new CircularExclusionError(current.participantId);
+        throw new CircularExclusionError(current);
       }
       continue;
     }
@@ -55,7 +57,7 @@ export function shuffleParticipants(
     throw new Error("no participants left");
   }
   if (userMap[current.participantId].exclusions.includes(firstTarget)) {
-    throw new CircularExclusionError(current.participantId);
+    throw new CircularExclusionError(current);
   }
   assigned[current.participantId] = firstTarget;
   return assigned;

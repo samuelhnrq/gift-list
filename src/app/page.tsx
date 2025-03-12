@@ -1,4 +1,4 @@
-import { getSession } from "@/auth";
+import { getSession } from "@/lib/auth";
 import { Typography } from "@mui/material";
 import { redirect } from "next/navigation";
 

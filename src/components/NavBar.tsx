@@ -1,7 +1,7 @@
 import { CardGiftcard } from "@mui/icons-material";
 import Link from "next/link";
 import AuthState from "./AuthState";
-import { getSession } from "@/auth";
+import { getSession } from "@/lib/auth";
 import { Typography, AppBar, Toolbar } from "@mui/material";
 
 async function NavBar() {

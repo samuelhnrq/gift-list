@@ -19,7 +19,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import Exclusions from "./Exclusions";
+import Exclusions from "./FieldExclusionsParticipant";
 import type { GameParticipant } from "@/lib/models";
 
 export type EditGameParticipantProps = {

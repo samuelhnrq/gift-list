@@ -10,18 +10,26 @@ export interface ExclusionsProps {
 function Exclusions({ ptg }: ExclusionsProps) {
   const [paticipants, setParticipants] = useState<string[]>([]);
   const [selected, setSelected] = useState(ptg.ptg.exclusions);
+  const [loading, setLoading] = useState(false);
   const participantMap: RefObject<Record<string, GameParticipant>> = useRef({});
   useEffect(() => {
-    getParticipantsOfGame(ptg.ptg.gameId).then((participants) => {
-      const people = participants.filter(
-        (x) => ptg.ptg.participantId !== x.ptg.participantId,
-      );
-      participantMap.current = Object.fromEntries(
-        people.map((x) => [x.participant.id, x]),
-      );
-      setParticipants(people.map((x) => x.participant.id));
-    });
-    setSelected(ptg.ptg.exclusions);
+    setLoading(true);
+    setParticipants([]);
+    setSelected([]);
+    getParticipantsOfGame(ptg.ptg.gameId)
+      .then((participants) => {
+        setSelected(ptg.ptg.exclusions);
+        const people = participants.filter(
+          (x) => ptg.ptg.participantId !== x.ptg.participantId,
+        );
+        participantMap.current = Object.fromEntries(
+          people.map((x) => [x.participant.id, x]),
+        );
+        setParticipants(people.map((x) => x.participant.id));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [ptg]);
   return (
     <>
@@ -35,6 +43,7 @@ function Exclusions({ ptg }: ExclusionsProps) {
         onChange={(_, newValue) => {
           setSelected(newValue);
         }}
+        loading={loading}
         value={selected}
         renderInput={(params) => (
           <TextField

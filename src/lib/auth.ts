@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { admin, jwt } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { betterAuth } from "better-auth";
-import { copyUserAsParticipant } from "./lib/participants";
+import { copyUserAsParticipant } from "./participants";
 import { passkey } from "better-auth/plugins/passkey";
 import { headers } from "next/headers";
 import { cache } from "react";
