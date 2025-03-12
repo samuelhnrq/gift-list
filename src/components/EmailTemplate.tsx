@@ -1,27 +1,35 @@
 import { BASE_URL } from "@/lib/auth-client";
 import type { AssignedNotification } from "@/lib/models";
 
-function EmailTemplate({
-  notification,
-}: {
-  notification: AssignedNotification;
-}) {
-  let name = "Hello!";
-  if (notification.user && notification.ptg.alias) {
-    name = `Hello ${notification.user.name} (a.k.a. ${notification.ptg.alias})`;
-  } else if (notification.user || notification.ptg.alias) {
-    name = `Hello ${notification.user?.name || notification.ptg.alias}`;
+function getName(target: AssignedNotification): string {
+  if (target.user && target.ptg.alias) {
+    return `${target.user.name} (a.k.a. ${target.ptg.alias})`;
+  } else if (target.user?.name || target.ptg.alias) {
+    return target.user?.name || target.ptg.alias || "";
+  } else {
+    return target.participant.userEmail;
   }
+}
+
+function EmailTemplate({
+  from,
+  to,
+}: {
+  from: AssignedNotification;
+  to: AssignedNotification;
+}) {
+  let name = getName(from);
+  let nameTo = getName(to);
   return (
     <div>
-      <h1>{name}</h1>
+      <h2>Hello {name}</h2>
       <p>
-        You have been assigned a partner in game {notification.game.name}. You
-        can view the game
-        <a href={`${BASE_URL}/games/${notification.game.id}`}> here</a>.
+        You have been assigned a partner in game {from.game.name}. You can view
+        the game
+        <a href={`${BASE_URL}/games/${from.game.id}`}> here</a>.
         <br />
         <br />
-        <p>Your partner is {notification.ptg.givesTo}</p>
+        <p>Your partner is {nameTo}</p>
         <br />
       </p>
     </div>

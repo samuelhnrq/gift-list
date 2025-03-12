@@ -1,14 +1,23 @@
 "use client";
 
-import {
-  clearGivesToAction,
-  closeGameAction,
-  shuffleParticipantsAction,
-} from "@/lib/games";
+import { clearGivesToAction, shuffleParticipantsAction } from "@/lib/games";
 import type { GameType } from "@/lib/models";
+import { notifyParticipantsAction } from "@/lib/participants";
 import { Notifications, Shuffle, Undo } from "@mui/icons-material";
-import { Button, ButtonGroup, type SxProps, type Theme } from "@mui/material";
-import { startTransition, useActionState, type ReactNode } from "react";
+import {
+  Button,
+  ButtonGroup,
+  Snackbar,
+  type SxProps,
+  type Theme,
+} from "@mui/material";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 
 function ShuffleParticipants({
   game,
@@ -17,19 +26,39 @@ function ShuffleParticipants({
   game: GameType;
   sx?: SxProps<Theme>;
 }) {
-  const [, shuffleAction, isShufflePending] = useActionState(
-    shuffleParticipantsAction,
-    game.id,
+  const [open, setOpen] = useState(false);
+  const [errorMsg, shuffleAction, isShufflePending] = useActionState(
+    shuffleParticipantsAction.bind(null, game.id),
+    "",
   );
+  useEffect(() => {
+    if (isShufflePending) {
+      setOpen(false);
+    }
+    if (errorMsg) {
+      setOpen(true);
+    }
+  }, [errorMsg, isShufflePending]);
   return (
-    <Button
-      startIcon={<Shuffle />}
-      onClick={() => startTransition(() => shuffleAction())}
-      loading={isShufflePending}
-      sx={sx}
-    >
-      Shuffle
-    </Button>
+    <>
+      <Button
+        startIcon={<Shuffle />}
+        onClick={() => {
+          startTransition(() => shuffleAction());
+        }}
+        loading={isShufflePending}
+        sx={sx}
+      >
+        Shuffle
+      </Button>
+      <Snackbar
+        open={open}
+        color=""
+        message={errorMsg}
+        onClose={() => setOpen(false)}
+        autoHideDuration={6000}
+      />
+    </>
   );
 }
 
@@ -63,14 +92,14 @@ function NotifyParticipants({
   game: GameType;
   sx?: SxProps<Theme>;
 }) {
-  const [, closeAction, isClosePending] = useActionState(
-    closeGameAction,
+  const [, notifyParticipants, isClosePending] = useActionState(
+    notifyParticipantsAction,
     game.id,
   );
   return (
     <Button
       endIcon={<Notifications />}
-      onClick={() => startTransition(() => closeAction())}
+      onClick={() => startTransition(() => notifyParticipants())}
       loading={isClosePending}
       sx={sx}
     >
@@ -98,7 +127,11 @@ function GameActions({
     actions.push(<ShuffleParticipants game={game} />);
   }
   return (
-    <ButtonGroup variant="contained" color="primary" sx={sx}>
+    <ButtonGroup
+      variant="contained"
+      color={game.status === "open" ? "primary" : "secondary"}
+      sx={sx}
+    >
       {actions}
     </ButtonGroup>
   );

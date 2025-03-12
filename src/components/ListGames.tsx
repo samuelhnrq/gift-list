@@ -10,6 +10,7 @@ import {
   Skeleton,
   Typography,
 } from "@mui/material";
+import dayjs from "dayjs";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -20,7 +21,7 @@ function GameCard({ game }: { game: GameType }) {
         <CardContent sx={{ color: "text.primary" }}>
           <Typography variant="h6">{game.name}</Typography>
           <Typography variant="body2" color="textSecondary">
-            {game.createdAt.toLocaleString()}
+            {dayjs(game.createdAt, { utc: true }).local().format("lll")}
           </Typography>
         </CardContent>
       </Link>

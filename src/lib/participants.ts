@@ -142,6 +142,7 @@ export const addParticipantAction = async (
     console.log("gameId is not a uuid", gameId);
     return "";
   }
+  console.log("adding participant", email);
   const profile = await getCurrentParticipant();
   try {
     await db.transaction(async (tx) => {
@@ -152,11 +153,15 @@ export const addParticipantAction = async (
       if (cont <= 0 || cont > 1) {
         tx.rollback();
       }
-      const [newParticipant] = await tx
+      await tx
         .insert(participant)
         .values({ userEmail: email })
         .onConflictDoNothing({ target: participant.userEmail })
         .returning({ id: participant.id });
+      const [newParticipant] = await tx
+        .select({ id: participant.id })
+        .from(participant)
+        .where(eq(participant.userEmail, email));
       if (!newParticipant.id) {
         tx.rollback();
       }
@@ -173,29 +178,51 @@ export const addParticipantAction = async (
   }
 };
 
-export const notifyParticipantsAction = async (gameId: string) => {
-  const profile = await getCurrentParticipant();
-  if (!game) {
-    return;
+export const notifyParticipantsAction = async (
+  gameId: string,
+): Promise<string> => {
+  if (!gameId) {
+    return gameId;
   }
-  const recipients = await db
-    .select({
-      participantToGame,
-      user,
-      game,
-      participant,
-      ptg: participantToGame,
-    })
-    .from(participantToGame)
-    .innerJoin(participant, eq(participant.id, participantToGame.participantId))
-    .leftJoin(user, eq(user.email, participant.userEmail))
-    .innerJoin(game, eq(game.id, participantToGame.gameId))
-    .where(
-      and(
-        eq(game.id, gameId),
-        eq(game.creator, profile.id),
-        eq(game.status, "shuffled"),
-      ),
+  const profile = await getCurrentParticipant();
+  await db.transaction(async (tx) => {
+    const recipients = await db
+      .select({
+        participantToGame,
+        user,
+        game,
+        participant,
+        ptg: participantToGame,
+      })
+      .from(participantToGame)
+      .innerJoin(
+        participant,
+        eq(participant.id, participantToGame.participantId),
+      )
+      .leftJoin(user, eq(user.email, participant.userEmail))
+      .innerJoin(game, eq(game.id, participantToGame.gameId))
+      .where(
+        and(
+          eq(game.id, gameId),
+          eq(game.creator, profile.id),
+          eq(game.status, "shuffled"),
+        ),
+      );
+    const recipientMap = Object.fromEntries(
+      recipients.map((x) => [x.participant.id, x]),
     );
-  await Promise.all(recipients.map((x) => notifyParticipant(x)));
+    try {
+      await Promise.all(
+        recipients.map((x) =>
+          notifyParticipant(x, recipientMap[x.participantToGame.givesTo || ""]),
+        ),
+      );
+    } catch (e) {
+      console.error("email error", e);
+      tx.rollback();
+    }
+    await tx.update(game).set({ status: "closed" }).where(eq(game.id, gameId));
+  });
+  revalidatePath(`/games/${gameId}`, "page");
+  return gameId;
 };

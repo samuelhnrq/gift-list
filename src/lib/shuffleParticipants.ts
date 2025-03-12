@@ -37,6 +37,7 @@ export function shuffleParticipants(
     if (failedToAssing.has(target)) {
       continue;
     }
+    console.log("checklin exclusions", current.alias, current.exclusions);
     if (current.exclusions.includes(target)) {
       failedToAssing.add(target);
       if (failedToAssing.size === remaining.length) {
@@ -50,6 +51,12 @@ export function shuffleParticipants(
     current = userMap[target];
     remaining.splice(i, 1);
   }
-  assigned[current.participantId] = firstTarget || "";
+  if (!firstTarget) {
+    throw new Error("no participants left");
+  }
+  if (userMap[current.participantId].exclusions.includes(firstTarget)) {
+    throw new CircularExclusionError(current.participantId);
+  }
+  assigned[current.participantId] = firstTarget;
   return assigned;
 }

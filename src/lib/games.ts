@@ -50,36 +50,49 @@ export const shuffleParticipantsAction = async (
   gameId: string,
 ): Promise<string> => {
   const profile = await getCurrentParticipant();
-  await db.transaction(async (tx) => {
-    const participants = await tx
-      .select({ participantToGame })
-      .from(participantToGame)
-      .innerJoin(game, eq(game.id, participantToGame.gameId))
-      .where(and(eq(game.creator, profile.id), eq(game.id, gameId)))
-      .execute();
-    const assigned = shuffleParticipants(
-      participants.map((x) => x.participantToGame),
-    );
-    await tx
-      .insert(participantToGame)
-      .values(
-        Object.entries(assigned).map(([k, v]) => ({
-          gameId,
-          participantId: k,
-          givesTo: v,
-        })),
-      )
-      .onConflictDoUpdate({
-        target: [participantToGame.participantId, participantToGame.gameId],
-        set: { givesTo: sql`excluded.gives_to`, updatedAt: sql`now()` },
-      });
-    await tx
-      .update(game)
-      .set({ status: "shuffled" })
-      .where(eq(game.id, gameId));
-  });
+  let failure = "";
+  try {
+    await db.transaction(async (tx) => {
+      const participants = await tx
+        .select({ participantToGame })
+        .from(participantToGame)
+        .innerJoin(game, eq(game.id, participantToGame.gameId))
+        .where(and(eq(game.creator, profile.id), eq(game.id, gameId)))
+        .execute();
+      console.log("participants", participants);
+      let assignments: Record<string, string> = {};
+      try {
+        assignments = shuffleParticipants(
+          participants.map((x) => x.participantToGame),
+        );
+      } catch (e) {
+        failure = "Failed to shuffle, maybe circular exclusions?";
+        tx.rollback();
+      }
+      await tx
+        .insert(participantToGame)
+        .values(
+          Object.entries(assignments).map(([k, v]) => ({
+            gameId,
+            participantId: k,
+            givesTo: v,
+          })),
+        )
+        .onConflictDoUpdate({
+          target: [participantToGame.participantId, participantToGame.gameId],
+          set: { givesTo: sql`excluded.gives_to`, updatedAt: sql`now()` },
+        });
+      await tx
+        .update(game)
+        .set({ status: "shuffled" })
+        .where(eq(game.id, gameId));
+    });
+  } catch (e) {
+    console.error("error", e);
+    return failure || `${e}`;
+  }
   revalidatePath(`/games/${gameId}`, "page");
-  return gameId;
+  return "";
 };
 
 export const clearGivesToAction = async (gameId: string): Promise<string> => {
@@ -102,20 +115,8 @@ export const clearGivesToAction = async (gameId: string): Promise<string> => {
   return gameId;
 };
 
-export const closeGameAction = async (gameId: string): Promise<string> => {
-  const session = await assertSession();
-  await db
-    .update(game)
-    .set({ status: "closed", updatedAt: sql`now()` })
-    .where(and(eq(game.id, gameId), eq(game.creator, session.user.id)));
-  revalidatePath(`/games/${gameId}`, "page");
-  return gameId;
-};
-
 export const createGameActiton = async (form: FormData): Promise<void> => {
-  console.log("form", form);
   const name = form.get("name");
-  console.log(name);
   if (typeof name !== "string") {
     throw new Error("Name is not a string");
   }

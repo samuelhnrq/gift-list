@@ -4,6 +4,13 @@ import NavBar from "@/components/NavBar";
 import { Container, Stack } from "@mui/material";
 import Providers from "@/components/Providers";
 import type { ReactNode } from "react";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+import utc from "dayjs/plugin/utc";
+
+import dayjs from "dayjs";
+
+dayjs.extend(localizedFormat);
+dayjs.extend(utc);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

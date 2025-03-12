@@ -26,6 +26,7 @@ function StatusPill({ game }: { game: GameType }) {
         fontSize: "1rem",
         color: "textSecondary",
       }}
+      size="small"
       component="div"
       label={game.status}
     />
@@ -60,7 +61,12 @@ async function GameDetail({ params }: GameDetailProps) {
         <Typography variant="h4" flex="1">
           {game.name}
         </Typography>
-        <StatusPill game={game} />
+        <Stack alignItems="center">
+          <Typography lineHeight={1} variant="overline">
+            Status
+          </Typography>
+          <StatusPill game={game} />
+        </Stack>
       </Stack>
       <AddParticipant game={game} />
       <Typography variant="h6">Participants</Typography>

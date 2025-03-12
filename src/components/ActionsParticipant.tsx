@@ -6,6 +6,7 @@ import {
   CircularProgress,
   IconButton,
   Popover,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useRef, useState } from "react";
@@ -20,37 +21,16 @@ interface ActionsParticipantProps {
 function ParticipantActions({ game, ptg }: ActionsParticipantProps) {
   const pid = ptg.participant.id;
   const [loading, setLoading] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
-  if (game.status === "shuffled") {
+  if (game.status === "shuffled" || game.status === "closed") {
     return (
-      <>
+      <Tooltip title={ptg.target?.userEmail}>
         <Chip
           label="Assigned"
-          ref={ref}
           size="small"
           color="primary"
           sx={{ userSelect: "none" }}
-          onMouseEnter={() => setOpen(true)}
-          onMouseLeave={() => setOpen(false)}
         />
-        <Popover
-          open={open}
-          sx={{ pointerEvents: "none" }}
-          disableRestoreFocus
-          anchorEl={ref.current}
-          anchorOrigin={{
-            vertical: "center",
-            horizontal: "right",
-          }}
-          transformOrigin={{
-            vertical: "center",
-            horizontal: "left",
-          }}
-        >
-          <Typography sx={{ p: 2 }}>{ptg.target?.userEmail}</Typography>
-        </Popover>
-      </>
+      </Tooltip>
     );
   }
   if (game.creator === pid) {
